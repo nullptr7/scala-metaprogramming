@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ScalaCompilerConfiguration">
+    <option name="separateProdTestSources" value="true" />
+    <profile name="sbt 1" modules="scala-metaprogramming,scala-metaprogramming_4493,scala-metaprogramming_4493.main,scala-metaprogramming_4493.test" />
+    <profile name="sbt 2" modules="scala-metaprogramming.main,scala-metaprogramming.test">
+      <parameters>
+        <parameter value="-Xprint:postInlining" />
+        <parameter value="-Xmax-inlines:100000" />
+      </parameters>
+    </profile>
+  </component>
+</project>
