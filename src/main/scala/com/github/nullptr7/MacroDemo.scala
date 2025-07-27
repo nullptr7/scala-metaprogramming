@@ -4,50 +4,29 @@ import quoted.*
 
 object MacroDemo {
 
-  // text -> AST -> binary
-  // text -> AST (quoting) -> AST -> splicing
-  // Quoting is converting the existing code to some form of Expr and Splicing is converting the Expr compile pipeline.
+  // 1. Macro definition
+  inline def debug(inline value: String): String = ${ debugImpl('value) }
+  // inline keyword
+  // splice body
+  // all quote arguments
+  // we can optionally inline the parameters, but that depends on your requirement.
+  // If we want to match the structure 'value' then we should use inline for e.g., we are doing expr.asTerm match so we need inline
 
-  // Quoting and Re-inserting back the AST
-  inline def firstMacro(number: Int, string: String): String =
-    ${ firstMacroImpl('number, 'string) }
+  // 2. Macro implementation
+  // essentially mirrors the structure of the face/definition
+  //   everything is wrapped in Expr
+  // using quotes
+  private def debugImpl(expr: Expr[String])(using quotes: Quotes): Expr[String] = {
 
-  // manipulating the AST
-  // this method is invoked at compile time only.
-  private def firstMacroImpl(
-      numAST:    Expr[Int],
-      stringAST: Expr[String],
-    )(using
-      Quotes
-    ): Expr[String] = {
+    // import this thing...
+    import quotes.reflect.*
 
-    // Below means if the constant is known at compile time i.e. via a val then it is fine
-    // else we will get a compilation issue.
-    val numValue    = numAST.valueOrAbort
-    val stringValue = stringAST.valueOrAbort
-
-    val finalValue =
-      if numValue < 4 then stringValue.repeat(numValue)
-      else stringValue.repeat(numValue / 10)
-
-    Expr("The macro expansion is: " + finalValue)
-
-  }
-
-  // quote and quote matching
-
-  inline def pmOptions(inline opt: Option[Int]): String =
-    ${ pmOptionsImpl('opt) }
-
-  private def pmOptionsImpl(opt: Expr[Option[Int]])(using Quotes): Expr[String] = {
-
-    val result = opt match {
-      case '{ Some(42) }                   => "got meaning of life"
-      case '{ Some($x) }                   => s"got a variable ${x.show}"
-      case '{ ($o: Option[a]).map[b]($f) } => "mapping an option"
-      case _                               => "got something else"
+    println(s"value = ${expr.asTerm.underlyingArgument}")
+    expr.asTerm.underlyingArgument match {
+      case Ident(name) => '{ ${ Expr(name) } + " = " + $expr }
+      case _           => expr
     }
-    Expr(result)
+
   }
 
 }
